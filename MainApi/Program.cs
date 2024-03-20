@@ -1,9 +1,55 @@
+using Common.Encryption;
+using Data;
+using Data.Abstracts;
+using MainApi.Helpers;
+using MainApi.Options;
+using MainApi.Services.Purchases;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
+const string DefaultConnection = "DefaultConnection";
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+var authOptions = new AuthOptions();
+builder.Configuration.GetRequiredSection(nameof(AuthOptions)).Bind(authOptions);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = authOptions.TokenIssuer,
+            ValidateAudience = true,
+            ValidAudience = authOptions.TokenAudience,
+            ValidateLifetime = true,
+            IssuerSigningKey = authOptions.GetSymmetricSecurityKey(),
+            ValidateIssuerSigningKey = true,
+        };
+    });
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<DbApplicationContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString(DefaultConnection);
+    DbApplicationContext.ConfigureContextOptions(options, connectionString);
+});
+
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(typeof(AuthOptions).Name));
+builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(typeof(EncryptionOptions).Name));
+
+builder.Services.AddAllImplementationsAsTransient<IQuery>();
+builder.Services.AddAllImplementationsAsTransient<ICommand>();
+builder.Services.AddAllImplementationsAsTransient<IValidator>();
+
+builder.Services.AddTransient<IEncryptionService, EncryptionService>();
+builder.Services.AddTransient<IPurchaseService, DummyPurchaseService>();
 
 var app = builder.Build();
 
@@ -15,30 +61,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

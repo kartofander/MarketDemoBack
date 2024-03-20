@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "All",
+    "Projects": [
+      {
+        "Name": "AuthApi\\AuthApi.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "MainApi\\MainApi.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      }
+    ]
+  }
+]
