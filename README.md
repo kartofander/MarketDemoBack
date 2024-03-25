@@ -13,7 +13,7 @@ This is a demo project representing backend part of an imaginary Marketplace web
 - Creation of store items for authorized users;
 - Data validation;
 - Purchase history;
-- Xunit tests;
+- Xunit tests using Moq and In-Memory EFCore;
 - Postman integration tests.
 
 ## What can be done or changed:
