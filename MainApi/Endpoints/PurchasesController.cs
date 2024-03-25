@@ -34,9 +34,13 @@ public class PurchasesController
 
         return purchases
             .Select(x => new PurchaseResponseDto(x))
-            .ToArray();
+        .ToArray();
     }
 
+    // I am assuming that the payment process takes place on the front end using some third-party payment services
+    // and it sends data about the completed transaction here (as a receipt id number, for example),
+    // so I can verify its authenticity and get its content by sending request to the same payment service from here.
+    // But as part of this simplified project, I get the purchase data directly
     [HttpPost]
     public async Task<long> Purchase([FromBody] PurchaseRequestDto purchaseDto)
     {
