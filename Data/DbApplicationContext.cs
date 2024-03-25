@@ -15,7 +15,7 @@ public class DbApplicationContext : DbContext
     
     public DbApplicationContext()
     {
-        Database.EnsureCreated();
+        Database?.EnsureCreated();
     }
 
     public DbApplicationContext(DbContextOptions<DbApplicationContext> options) : base(options)
