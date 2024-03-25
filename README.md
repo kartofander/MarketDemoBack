@@ -11,8 +11,9 @@ This is a demo project representing backend part of an imaginary Marketplace web
 - User authentication and authorization using JWT Bearer;
 - Simple password encryption using MD5;
 - Creation of store items for authorized users;
+- Data validation;
 - Purchase history;
-- NUnit tests;
+- Xunit tests;
 - Postman integration tests.
 
 ## What can be done or changed:
